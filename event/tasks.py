@@ -8,8 +8,9 @@ from event.serializers import EventSerializer
 
 logger = logging.getLogger(__name__)
 
+
 @shared_task
-def event_save(data, *args, **kwargs):
+def event_save(data: dict, *args, **kwargs):
     sleep(60)
 
     event_serialize = EventSerializer(data=data)

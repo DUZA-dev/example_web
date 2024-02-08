@@ -13,15 +13,15 @@ class ChatConsumer(WebsocketConsumer):
 
         self.send(text_data=json.dumps({
             'user': self.scope['user'].email,
-            'message': 'I joined this chat'
+            'message': 'I joined this channel'
         }))
 
-    def disconnect(self, close_code):
+    def disconnect(self, close_code: int):
         async_to_sync(self.channel_layer.group_discard)(
             'chat', self.channel_name
         )
 
-    def receive(self, text_data):
+    def receive(self, text_data: dict):
         text_data_json = json.loads(text_data)
 
         async_to_sync(self.channel_layer.group_send)(
@@ -31,7 +31,7 @@ class ChatConsumer(WebsocketConsumer):
             }
         )
 
-    def chat_message(self, event):
+    def chat_message(self, event: dict):
         message = event['message']
 
         self.send(text_data=json.dumps({

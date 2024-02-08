@@ -5,9 +5,8 @@ from core.models import User
 from core.serializers import UserSerializer
 
 
-
 class CreateUserAPIView(viewsets.ModelViewSet):
+    """ API вьюшка создания пользователя """
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
-

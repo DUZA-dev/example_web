@@ -1,47 +1,35 @@
 from django.conf import settings
-from urllib.parse import parse_qs
 from asgiref.sync import sync_to_async
-from django.db import close_old_connections
 
-from jwt import decode as jwt_decode
+from jwt import InvalidTokenError, decode as jwt_decode
 from channels.security.websocket import WebsocketDenier
-from rest_framework_simplejwt.tokens import UntypedToken
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from core.models import User
 
+from channels.middleware import BaseMiddleware
 
-class TokenAuthMiddleware:
-    """
-    Custom token auth middleware
-    """
 
-    def __init__(self, application):
-        self.application = application
+class JWTWSMiddleware(BaseMiddleware):
+    """
+    Уф, здесь работа над Websocket'ами, отрабатывается до начала
+    их соединения, производится проверка на аутентифицированною
+
+    Выступает жесткой оберткой в роутинге протоколов, для WS
+    """
 
     async def __call__(self, scope, receive, send):
-        close_old_connections()
-
+        headers = dict(scope["headers"])
         denier = WebsocketDenier()
-        try:
-            token = parse_qs(scope["query_string"].decode("utf8"))["token"][0]
-        except KeyError:
-            return await denier(scope, receive, send)
 
-        try:
-            # This will automatically validate the token and raise an error if token is invalid
-            UntypedToken(token)
-        except (InvalidToken, TokenError) as e:
-            # Token is invalid
-            print(e)
-            return await denier(scope, receive, send)
-        else:
-            decoded_data = jwt_decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-
+        if b"authorization" in headers:
             try:
-                user = await sync_to_async(User.objects.get)(id=decoded_data["user_id"])
-            except User.DoesNotExist:
-                return await denier(scope, receive, send)
+                token = headers[b"authorization"].decode("utf-8")
+                decoded_data = jwt_decode(token, settings.SECRET_KEY)
 
-        scope["user"] = user
-        return await self.application(scope, receive, send)
+                scope['user'] = await sync_to_async(User.objects.get)(
+                    id=decoded_data['user_id'],
+                )
+                return await super().__call__(scope, receive, send)
+            except (User.DoesNotExist, InvalidTokenError):
+                pass
+        return await denier(scope, receive, send)

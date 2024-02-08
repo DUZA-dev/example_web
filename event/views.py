@@ -4,22 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 
-from django_filters import DateTimeFilter, filterset
 from django_filters.rest_framework import DjangoFilterBackend
 
 from event.models import Event, Organization
 from event.serializers import EventSerializer, OrganizationSerializer
 from event.tasks import event_save
+from event.filters import EventFilter
 
-
-class EventFilter(filterset.FilterSet):
-    date = DateTimeFilter(field_name='date', lookup_expr='date')
-    date__gte = DateTimeFilter(field_name="date", lookup_expr='date__gte')
-    date__lte = DateTimeFilter(field_name="date", lookup_expr='date__lte')
-
-    class Meta:
-        model = Event
-        fields = []
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()

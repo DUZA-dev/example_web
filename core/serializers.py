@@ -7,19 +7,26 @@ from event.serializers import OrganizationSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """ Сериализация переопределенной модели User """
     organizations = OrganizationSerializer(many=True, required=False)
 
-    class Meta(object):
+    class Meta:
         model = User
-        fields = ['email', 'telephone', 'password', 'organizations']
-        write_only_fields = ('password',)
+        fields = ('email', 'telephone', 'password', 'organizations', )
+        extra_kwargs = {
+            'password': {'write_only': True, },
+        }
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> User:
         user = User.objects.create_user(**validated_data)
 
         return user
 
-    def validate_telephone(self, value):
+    def validate_telephone(self, value: str) -> str:
+        """
+        Валидация мобильного/домашнего/виртуального номера
+        с помошью гугловской библиотеки phonenumbers
+        """
         if value is None:
             return value
         elif value[0] != '+':

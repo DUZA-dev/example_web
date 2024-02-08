@@ -1,13 +1,18 @@
 from django.db import models, transaction
-from django.contrib.auth.models import UserManager
+from django.contrib.auth.models import UserManager, User
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin
 )
 
 from event.models import Organization
 
+
 class UserRestManager(UserManager):
-    def create_user(self, email, password, **extra_fields):
+    """
+    Манага для модели User, переопределяет стандартные
+    методы создания пользователя и админа, трыцпыцпыц
+    """
+    def create_user(self, email: str, password: str, **extra_fields) -> User:
         if not email:
             raise ValueError('Установите email')
         try:
@@ -17,16 +22,23 @@ class UserRestManager(UserManager):
                 user.save(using=self._db)
                 return user
         except:
-            raise
+            raise ConnectionError('Произошла ошибка при создании пользователя.')
 
-
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, email: str, password: str, **extra_fields) -> User:
+        """
+        Не забываем переопределить метод создания уважаемых админов,
+        установка нужных флагов is_staff & is_superuser.
+        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """
+    Переопределенная модель пользователя, добавлена связь с организациями,
+    добавил поле телефонного номера и переопределил поле username по умолчанию на email
+    """
     email = models.EmailField(max_length=35, unique=True)
     telephone = models.CharField(max_length=50, blank=True, null=True)
 
@@ -40,9 +52,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-
-    #def save(self, *args, **kwargs):
-    #    super(User, self).save(*args, **kwargs)
-    #    return self
-
-
