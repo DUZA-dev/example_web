@@ -1,7 +1,7 @@
 FROM python:3.11-alpine
 LABEL authors="kras"
 
-WORKDIR /usr/src/example_events
+WORKDIR /usr/src/web_events_list
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1

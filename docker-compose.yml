@@ -9,9 +9,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A example_events worker
+    command: celery -A web_events_list worker
     volumes:
-      - .:/usr/src/example_events
+      - .:/usr/src/web_events_list
     links:
       - redis
     depends_on:
@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/usr/src/example_events
+      - .:/usr/src/web_events_list
     ports:
       - 8000:8000
     depends_on:

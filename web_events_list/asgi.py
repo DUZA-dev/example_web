@@ -1,5 +1,5 @@
 """
-ASGI config for example_events project.
+ASGI config for web_events_list project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -17,7 +17,7 @@ import chat.routing as chat
 
 from core.middleware import JWTWSMiddleware
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'example_events.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web_events_list.settings')
 
 http = get_asgi_application()
 
